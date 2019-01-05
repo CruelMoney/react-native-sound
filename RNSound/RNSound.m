@@ -112,6 +112,8 @@ RCT_EXPORT_METHOD(setActive:(BOOL)active) {
   [session setActive: active error: nil];
 }
 
+
+
 RCT_EXPORT_METHOD(setMode:(NSString *)modeName) {
   AVAudioSession *session = [AVAudioSession sharedInstance];
   NSString *mode = nil;
@@ -166,11 +168,50 @@ RCT_EXPORT_METHOD(setCategory:(NSString *)categoryName
 
   if (category) {
     if (mixWithOthers) {
-        [session setCategory: category withOptions:AVAudioSessionCategoryOptionMixWithOthers error: nil];
-    } else {
+        AVAudioSessionCategoryOptions options = AVAudioSessionCategoryOptionMixWithOthers;
+        [[AVAudioSession sharedInstance] setCategory:category withOptions:options error:nil];
+    } else{
       [session setCategory: category error: nil];
     }
   }
+}
+
+
+RCT_EXPORT_METHOD(getCategory: withCallback:(RCTResponseSenderBlock)callback) {
+    AVAudioSession *session = [AVAudioSession sharedInstance];
+    NSString *category = nil;
+    NSString *options = nil;
+    
+    switch (session.categoryOptions) {
+        case AVAudioSessionCategoryOptionMixWithOthers:
+            options = @"mix with others";
+            break;
+        case AVAudioSessionCategoryOptionDefaultToSpeaker:
+            options = @"default to speaker";
+            break;
+        case AVAudioSessionCategoryOptionDuckOthers:
+            options = @"duck others";
+            break;
+            
+        case AVAudioSessionCategoryOptionInterruptSpokenAudioAndMixWithOthers:
+            options = @"Spoken audio mix others";
+            break;
+        case AVAudioSessionCategoryOptionAllowAirPlay:
+            options = @"Allow airplay";
+            break;
+        case AVAudioSessionCategoryOptionAllowBluetooth:
+            options = @"Allow bluetooth";
+            break;
+        case AVAudioSessionCategoryOptionAllowBluetoothA2DP:
+            options = @"Allow bluetooth 2";
+            break;
+        default:
+            options = @"default";
+            break;
+    }
+    
+    callback(@[@{@"category": session.category}, @{@"mode": session.mode},  @{@"mode": options}]);
+   
 }
 
 RCT_EXPORT_METHOD(enableInSilenceMode:(BOOL)enabled) {
